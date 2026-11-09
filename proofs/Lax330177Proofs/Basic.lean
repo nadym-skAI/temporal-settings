@@ -9,7 +9,7 @@ open Lax330177.Examples
 ---
 conclusion: Lax330177.Representations.snapshots_labels
 ---
-A finite horizon includes empty snapshots.
+A finite lifetime includes empty snapshots.
 -/
 theorem snapshots_labels {n} (G : Graph n) : (toLabels G).toSnapshots = G := snapshot_roundtrip G
 
@@ -17,7 +17,7 @@ theorem snapshots_labels {n} (G : Graph n) : (toLabels G).toSnapshots = G := sna
 ---
 conclusion: Lax330177.Representations.labels_snapshots
 ---
-A finite horizon includes empty snapshots.
+A finite lifetime includes empty snapshots.
 -/
 theorem labels_snapshots {n} (G : LabeledGraph n) : toLabels G.toSnapshots = G := label_roundtrip G
 

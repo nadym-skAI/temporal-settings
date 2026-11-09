@@ -7,7 +7,7 @@ import Lax330177.Paths
 title: Traversal times
 type: definition
 ---
-Each occurrence has a natural traversal time. The next departure may occur at arrival. The horizon bounds departure times and the final arrival may fall outside it.
+Each occurrence has a natural traversal time. The next departure may occur at arrival. The lifetime bounds departure times and the final arrival may fall outside it.
 -/
 namespace Lax330177.Durations
 open Lax330177.Representations

@@ -4,3 +4,5 @@ import Lax330177.Paths
 import Lax330177.Durations
 import Lax330177.Examples
 import Lax330177.OptimalPaths
+import Lax330177.UniformCosts
+import Lax330177.CostExamples

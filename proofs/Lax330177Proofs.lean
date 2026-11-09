@@ -1,2 +1,4 @@
 import Lax330177Proofs.Basic
 import Lax330177Proofs.OptimalPaths
+import Lax330177Proofs.UniformCosts
+import Lax330177Proofs.CostExamples

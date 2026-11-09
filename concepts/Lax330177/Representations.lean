@@ -5,7 +5,7 @@ import Mathlib
 title: Three representations of temporal graphs
 type: definition
 ---
-A finite horizon includes empty snapshots. Chronological lists enumerate distinct arc occurrences. Ties can be permuted. Undirected edges have both orientations.
+A finite lifetime includes empty snapshots. Chronological lists enumerate distinct arc occurrences. Ties can be permuted. Undirected edges have both orientations.
 -/
 namespace Lax330177.Representations
 noncomputable section
