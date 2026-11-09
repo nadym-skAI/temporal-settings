@@ -1,0 +1,1 @@
+Finite temporal graphs admit snapshot, time-labelled footprint and chronological event representations. Strict and nonstrict paths use increasing and weakly increasing departures. We compare both modes on proper graphs, interpret their timing rules through traversal durations, and give counterexamples for walks and transitivity.
