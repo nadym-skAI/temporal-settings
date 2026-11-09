@@ -138,5 +138,13 @@ axiom simple_separation : IsSimple simultaneousChain ∧ ¬ IsProper .directed s
 
 axiom proper_separation : IsProper .undirected repeatedEdge ∧ ¬ IsSimple repeatedEdge ∧ ¬ IsProper .directed repeatedEdge
 
+def reverseChainPath : Walk backwardsChain .strict 2 where
+  vertex := ![2,1,0]
+  time := id
+  available := by intro i; fin_cases i <;> decide
+  ordered := by intro i j h; exact h
+
+axiom happy_asymmetry (m : TraversalMode) : IsHappy .undirected backwardsChain ∧ Reaches backwardsChain m 2 0 ∧ ¬ Reaches backwardsChain m 0 2
+
 end
 end Lax330177.Examples

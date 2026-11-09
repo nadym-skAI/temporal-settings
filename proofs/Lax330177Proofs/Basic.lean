@@ -224,7 +224,27 @@ theorem support_reach {n} (G H : Graph n) (m l : TraversalMode) (h : SupportEqui
     exact ⟨k,z.val,z.property,(congrFun hz 0).trans hs,(congrFun hz _).trans hf⟩
   · obtain ⟨z,hz⟩ := (h k w.vertex).mpr ⟨⟨w,hp⟩,rfl⟩
     exact ⟨k,z.val,z.property,(congrFun hz 0).trans hs,(congrFun hz _).trans hf⟩
+/--
+---
+conclusion: Lax330177.Examples.happy_asymmetry
+---
+Traversing the two edges in increasing order connects the endpoints in exactly one direction.
+-/
+theorem happy_asymmetry (m : TraversalMode) : IsHappy .undirected backwardsChain ∧ Reaches backwardsChain m 2 0 ∧ ¬ Reaches backwardsChain m 0 2 := by
+  have happy : IsHappy .undirected backwardsChain := by
+    dsimp [IsHappy, IsSimple, IsProper, ValidDirection, IsUndirected, SameStaticEdge, backwardsChain]
+    constructor
+    · intro u v t s ht hs; grind
+    · constructor
+      · intro t u v; grind
+      · intro t u v x y huv hxy hshare; grind
+  have hr : Reaches backwardsChain .strict 2 0 :=
+    ⟨2,reverseChainPath,by change Function.Injective ![(2 : Fin 3),1,0]; decide,rfl,rfl⟩
+  exact ⟨happy,by cases m <;> first | exact hr | exact strict_reaches_nonstrict hr,not_reaches_endpoints m⟩
 end Lax330177Proofs.Basic
+
+
+
 
 
 

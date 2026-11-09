@@ -7,7 +7,7 @@ authors: []
 bibEntries:
   - |
     @article{casteigts2024happy,
-      author = {Arnaud Casteigts and Timothee Corsini and Writika Sarkar},
+      author = {Arnaud Casteigts and Timothée Corsini and Writika Sarkar},
       title = {Simple, strict, proper, happy: A study of reachability in temporal graphs},
       journal = {Theoretical Computer Science},
       year = {2024},
@@ -21,4 +21,5 @@ bibEntries:
       year = {2025},
       doi = {10.4230/LIPIcs.ISAAC.2025.27}
     }
+
 

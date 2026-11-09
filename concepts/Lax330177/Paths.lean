@@ -200,6 +200,11 @@ theorem proper_reaches_iff {n : ℕ} {G : Graph n} (d : Direction) (hg : IsPrope
     exact ⟨k, w.strictify d hg (w.path_staticTrail d hp), hp, hs, ht⟩
 
 abbrev TemporalPath {n} (G : Graph n) (m : TraversalMode) (k : ℕ) := {w : Walk G m k // w.IsPath}
+abbrev StrictPath {n} (G : Graph n) := TemporalPath G .strict
+abbrev NonstrictPath {n} (G : Graph n) := TemporalPath G .nonstrict
+abbrev StrictReachability {n} (G : Graph n) := Reaches G .strict
+abbrev NonstrictReachability {n} (G : Graph n) := Reaches G .nonstrict
+
 def graphReaches {n s} (G : InterpretedGraph n s) := Reaches G.graph s.mode
 
 axiom strict_inclusion {n} {G : Graph n} {u v} : Reaches G .strict u v → Reaches G .nonstrict u v

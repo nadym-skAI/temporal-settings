@@ -44,5 +44,10 @@ structure InterpretedGraph (n : ℕ) (s : Setting) where
   graph : Graph n
   admitted : s.Admits graph
 
+abbrev StrictTemporalGraph (n : ℕ) (d : Direction) (simple proper : Bool) :=
+  InterpretedGraph n ⟨d, .strict, simple, proper⟩
+abbrev NonstrictTemporalGraph (n : ℕ) (d : Direction) (simple proper : Bool) :=
+  InterpretedGraph n ⟨d, .nonstrict, simple, proper⟩
+
 end
 end Lax330177.Settings
