@@ -4,4 +4,21 @@ leanVersion: "v4.33.0"
 mathlibVersion: "db584cd6d46c92f209a44c0f1c829460d327499d"
 title: "Temporal graphs, traversal times, and reachability"
 authors: []
-bibEntries: []
+bibEntries:
+  - |
+    @article{casteigts2024happy,
+      author = {Arnaud Casteigts and Timothee Corsini and Writika Sarkar},
+      title = {Simple, strict, proper, happy: A study of reachability in temporal graphs},
+      journal = {Theoretical Computer Science},
+      year = {2024},
+      eprint = {2208.01720}
+    }
+  - |
+    @inproceedings{doering2025settings,
+      author = {Michelle Döring},
+      title = {Simple, Strict, Proper, and Directed: Comparing Reachability in Directed and Undirected Temporal Graphs},
+      booktitle = {ISAAC},
+      year = {2025},
+      doi = {10.4230/LIPIcs.ISAAC.2025.27}
+    }
+

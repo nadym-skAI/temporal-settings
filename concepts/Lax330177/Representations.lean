@@ -107,5 +107,27 @@ axiom snapshots_labels {n} (G : Graph n) : (toLabels G).toSnapshots = G
 
 axiom labels_snapshots {n} (G : LabeledGraph n) : toLabels G.toSnapshots = G
 
+def occurrences {n} (G : Graph n) :=
+  Finset.univ.filter (fun e : Fin G.lifetime × Fin n × Fin n => G.edge e.1 e.2.1 e.2.2)
+
+def streamOf {n} (G : Graph n) : EventStream n G.lifetime := by
+  let xs := (occurrences G).toList
+  let cmp (a b : Fin G.lifetime × Fin n × Fin n) := decide (a.1 ≤ b.1)
+  refine ⟨xs.mergeSort cmp, ?_, ?_, ?_⟩
+  · have h := List.pairwise_mergeSort (le := cmp)
+        (by simpa [cmp] using (fun a b c => @le_trans _ _ a.1 b.1 c.1 : ∀ a b c : Fin G.lifetime × Fin n × Fin n, _))
+        (by intro a b; simpa [cmp] using le_total a.1 b.1) xs
+    simpa [cmp] using h
+  · exact (List.mergeSort_perm xs cmp).nodup_iff.mpr (Finset.nodup_toList _)
+  · rintro ⟨t,u,v⟩ he huv
+    change u = v at huv
+    subst v
+    exact G.loopless t u (by simpa [xs, occurrences] using he)
+
+axiom stream_edges {n} (G : Graph n) (t : Fin G.lifetime) (u v : Fin n) : (streamOf G).snapshots.edge t u v ↔ G.edge t u v
+
+axiom stream_roundtrip {n h} (s : EventStream n h) : (streamOf s.snapshots).events.Perm s.events
+
 end
 end Lax330177.Representations
+

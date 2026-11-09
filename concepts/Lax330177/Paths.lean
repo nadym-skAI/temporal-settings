@@ -206,5 +206,24 @@ axiom strict_inclusion {n} {G : Graph n} {u v} : Reaches G .strict u v → Reach
 
 axiom proper_modes {n} (G : Graph n) (d : Direction) (h : IsProper d G) (u v) : Reaches G .strict u v ↔ Reaches G .nonstrict u v
 
+def bidirect {n} {s : Setting} (G : InterpretedGraph n s) :
+    InterpretedGraph n { s with direction := .directed, requireProper := false } where
+  graph := G.graph
+  admitted := ⟨trivial, G.admitted.2.1, by simp⟩
+
+axiom bidirect_paths {n s} (G : InterpretedGraph n s) (_ : s.direction = .undirected) (k : ℕ) : TemporalPath (bidirect G).graph s.mode k = TemporalPath G.graph s.mode k
+
+axiom walk_path_reach {n} (G : Graph n) (m : TraversalMode) (u v) : WalkReaches G m u v ↔ Reaches G m u v
+
+axiom proper_path_times {n k} (G : Graph n) (d : Direction) (hg : IsProper d G) (w : TemporalPath G .nonstrict k) : StrictMono w.val.time
+
+def Realizes {n k} (G : Graph n) (m : TraversalMode) (x : Fin (k+1) → Fin n) :=
+  ∃ w : TemporalPath G m k, w.val.vertex = x
+
+def SupportEquivalent {n} (G H : Graph n) (m l : TraversalMode) :=
+  ∀ k (x : Fin (k+1) → Fin n), Realizes G m x ↔ Realizes H l x
+
+axiom support_reach {n} (G H : Graph n) (m l : TraversalMode) (h : SupportEquivalent G H m l) (u v) : Reaches G m u v ↔ Reaches H l u v
+
 end
 end Lax330177.Paths

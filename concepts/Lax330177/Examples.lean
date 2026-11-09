@@ -123,5 +123,20 @@ axiom bounce_same_time : IsProper .undirected repeatedEdge ∧ ¬ StrictMono sim
 
 axiom chain_failure (m : TraversalMode) : ¬ (∀ u v z, Reaches backwardsChain m u v → Reaches backwardsChain m v z → Reaches backwardsChain m u z)
 
+abbrev simultaneousChain : Graph 3 where
+  lifetime := 1
+  edge _ u v := (u = 0 ∧ v = 1) ∨ (u = 1 ∧ v = 2)
+  loopless := by intro t u; fin_cases u <;> decide
+
+def chainPath : Walk simultaneousChain .nonstrict 2 where
+  vertex := id
+  time _ := 0
+  available := by intro i; fin_cases i <;> decide
+  ordered := by intro i j h; exact le_rfl
+
+axiom simple_separation : IsSimple simultaneousChain ∧ ¬ IsProper .directed simultaneousChain ∧ Reaches simultaneousChain .nonstrict 0 2 ∧ ¬ Reaches simultaneousChain .strict 0 2
+
+axiom proper_separation : IsProper .undirected repeatedEdge ∧ ¬ IsSimple repeatedEdge ∧ ¬ IsProper .directed repeatedEdge
+
 end
 end Lax330177.Examples
