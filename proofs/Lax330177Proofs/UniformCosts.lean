@@ -21,7 +21,7 @@ private theorem telescope {k : ℕ} (t : Fin (k+1) → ℕ) (c : ℕ)
 ---
 conclusion: Lax330177.UniformCosts.elapsed_eq
 ---
-Summing the gaps between successive traversals cancels the internal timestamps.
+Split the interval from first departure to final arrival into the traversals and the gaps between them. Each traversal contributes c time units. Each gap runs from one arrival to the next departure and contributes exactly the waiting time there. These pieces cover the interval in order, so elapsed time equals total waiting plus c times the hop count. A zero-hop path departs and arrives at the same instant, making both sides zero.
 -/
 theorem elapsed_eq (p : Candidate q) (c : ℕ) (h : Uniform q c) :
     p.elapsed = p.waiting + p.hops * c := by
@@ -55,7 +55,7 @@ theorem elapsed_eq (p : Candidate q) (c : ℕ) (h : Uniform q c) :
 ---
 conclusion: Lax330177.UniformCosts.zero_optima
 ---
-At zero cost per traversal the two objective values agree path by path.
+Set c to zero in the elapsed-time identity. Every path then has elapsed time equal to its own waiting time. Consequently two feasible paths compare in exactly the same order under the two criteria, including ties, and their sets of minimizers coincide.
 -/
 theorem zero_optima (p : Candidate q) (h : Uniform q 0) : Fastest p ↔ MinimumWaiting p := by
   simp only [Fastest,MinimumWaiting,isMinOn_univ_iff,elapsed_eq _ 0 h,Nat.mul_zero,Nat.add_zero]
@@ -64,7 +64,7 @@ theorem zero_optima (p : Candidate q) (h : Uniform q 0) : Fastest p ↔ MinimumW
 ---
 conclusion: Lax330177.UniformCosts.unit_optima
 ---
-At unit cost every traversal contributes one to elapsed time.
+Set c to one in the elapsed-time identity. A path with k hops and w units of waiting takes k + w units from departure to arrival. Comparing this sum over all feasible paths is therefore exactly the comparison that defines a fastest path.
 -/
 theorem unit_optima (p : Candidate q) (h : Uniform q 1) :
     Fastest p ↔ IsMinOn (fun x : Candidate q => x.waiting + x.hops) Set.univ p := by
