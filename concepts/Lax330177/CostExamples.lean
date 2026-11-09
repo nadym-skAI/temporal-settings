@@ -3,13 +3,17 @@ import Lax330177.UniformCosts
 /-!
 ---
 title: Three-vertex examples separating path objectives
-type: theorem
+type: definition
 ---
 The chain 0 → 1 → 2 is available at times 0 through 3. An optional shortcut
 0 → 2 makes a triangle. Every traversal takes c units, where c is zero or one.
 In the triangle compare the direct departures at 0 and 3 with the two-hop
 journey departing at 0 and c. In the chain compare departures (0,3) with (0,c).
 These witnesses distinguish optimality predicates, allowing ties.
+
+- [Early and late direct paths.](Lax330177Proofs.CostExamples.direct_choices.html) In the triangle, direct departures at 0 and 3 both minimize hops, elapsed time and waiting for either traversal cost. Of these two paths, only the early one is foremost and only the late one is latest-departing.
+- [A shortest path can wait longer.](Lax330177Proofs.CostExamples.slow_shortest.html) On the chain without the shortcut, departures at 0 and 3 give a shortest path for either traversal cost. Another feasible path arrives in less elapsed time and has less total waiting.
+- [A detour with no waiting.](Lax330177Proofs.CostExamples.no_wait_detour.html) In the triangle, the two-hop path departing at 0 and c minimizes waiting for either traversal cost and uses more hops than the shortcut. It is fastest exactly when c is zero.
 -/
 namespace Lax330177.CostExamples
 open Lax330177.Representations Lax330177.Durations Lax330177.OptimalPaths
@@ -58,17 +62,8 @@ def via (shortcut slow : Bool) (c : Fin 2) : Candidate (query shortcut c) where
   last := by cases shortcut <;> cases slow <;> fin_cases c <;> dsimp [DurationPath, Feasible, query, network] <;> decide
   instantaneous := by cases shortcut <;> cases slow <;> fin_cases c <;> dsimp [DurationPath, Feasible, query, network] <;> decide
 
-axiom direct_choices (c : Fin 2) :
-    Shortest (direct false c) ∧ Fastest (direct false c) ∧ MinimumWaiting (direct false c) ∧
-    Foremost (direct false c) ∧ ¬ LatestDeparture (direct false c) ∧
-    Shortest (direct true c) ∧ Fastest (direct true c) ∧ MinimumWaiting (direct true c) ∧
-    LatestDeparture (direct true c) ∧ ¬ Foremost (direct true c)
 
-axiom slow_shortest (c : Fin 2) : Shortest (via false true c) ∧
-    ¬ Fastest (via false true c) ∧ ¬ MinimumWaiting (via false true c)
 
-axiom no_wait_detour (c : Fin 2) : MinimumWaiting (via true false c) ∧
-    ¬ Shortest (via true false c) ∧ (Fastest (via true false c) ↔ c.val = 0)
 end Lax330177.CostExamples
 
 

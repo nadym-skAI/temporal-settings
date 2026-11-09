@@ -14,6 +14,8 @@ departure paths maximize departure. Minimum waiting paths minimize the sum of
 idle gaps at internal vertices. Initial waiting and time after arrival do not
 contribute. A zero-edge path occupies its vertex at any one instant in the window.
 Every feasible query admits an optimizer for each of the five criteria.
+
+- [Each objective attains its optimum.](Lax330177Proofs.OptimalPaths.optima_exist.html) Fix the endpoints, traversal times, release time and arrival deadline. If at least one feasible path exists, then each of the five criteria has an optimal path. The optimizing path may depend on the criterion.
 -/
 namespace Lax330177.OptimalPaths
 open Lax330177.Representations Lax330177.Durations
@@ -60,9 +62,5 @@ abbrev EarliestArrival (p : Candidate q) := Foremost p
 def LatestDeparture (p : Candidate q) := IsMaxOn Candidate.departure Set.univ p
 def MinimumWaiting (p : Candidate q) := IsMinOn Candidate.waiting Set.univ p
 
-axiom optima_exist (h : Nonempty (Candidate q)) :
-    (∃ p : Candidate q, Shortest p) ∧ (∃ p : Candidate q, Fastest p) ∧
-    (∃ p : Candidate q, Foremost p) ∧ (∃ p : Candidate q, LatestDeparture p) ∧
-    (∃ p : Candidate q, MinimumWaiting p)
 end Lax330177.OptimalPaths
 

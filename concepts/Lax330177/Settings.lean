@@ -6,7 +6,7 @@ import Lax330177.Representations
 title: Temporal graph settings
 type: definition
 ---
-A setting selects direction, traversal mode and restrictions on the labelling. Happy graphs are both simple and proper.
+A setting selects direction, traversal mode and restrictions on the labelling. At a fixed time, two composable arcs u → v and v → w may coexist only when w = u. Opposite arcs may share a time, as may arcs with a common tail or a common head. For symmetric snapshots this is exactly the matching condition. Happy graphs are both simple and proper.
 -/
 namespace Lax330177.Settings
 open Lax330177.Representations
@@ -21,8 +21,7 @@ def IsSimple {n : ℕ} (G : Graph n) : Prop :=
   ∀ u v t s, G.edge t u v → G.edge s u v → t = s
 
 def IsProper {n : ℕ} (d : Direction) (G : Graph n) : Prop :=
-  ValidDirection d G ∧ ∀ t u v x y, G.edge t u v → G.edge t x y →
-    (u = x ∨ u = y ∨ v = x ∨ v = y) → SameStaticEdge d u v x y
+  ValidDirection d G ∧ ∀ t u v w, G.edge t u v → G.edge t v w → u = w
 
 def IsHappy {n : ℕ} (d : Direction) (G : Graph n) : Prop :=
   IsSimple G ∧ IsProper d G

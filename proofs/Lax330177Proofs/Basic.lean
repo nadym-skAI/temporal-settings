@@ -1,5 +1,7 @@
+import Lax330177Proofs.Foundations
 import Lax330177
 namespace Lax330177Proofs.Basic
+open Lax330177Proofs.Foundations
 open Lax330177.Representations
 open Lax330177.Settings
 open Lax330177.Paths
@@ -7,7 +9,7 @@ open Lax330177.Durations
 open Lax330177.Examples
 /--
 ---
-conclusion: Lax330177.Representations.snapshots_labels
+conclusion: Lax330177.SnapshotsLabels.snapshots_labels
 ---
 Fix a time and an ordered pair of vertices. The label set of that pair contains the time exactly when the original snapshot contains the arc. Reconstructing the snapshot tests this same membership, so it recovers every arc at every time. The lifetime is copied as well, even when the final snapshot is empty.
 -/
@@ -15,7 +17,7 @@ theorem snapshots_labels {n} (G : Graph n) : (toLabels G).toSnapshots = G := sna
 
 /--
 ---
-conclusion: Lax330177.Representations.labels_snapshots
+conclusion: Lax330177.LabelsSnapshots.labels_snapshots
 ---
 An arc appears in the reconstructed snapshot at time t exactly when t belongs to its original label set. Collecting its appearance times therefore recovers that set. The footprint is recovered too, since its edges are precisely the pairs with nonempty label sets, and both conversions preserve the lifetime.
 -/
@@ -23,7 +25,7 @@ theorem labels_snapshots {n} (G : LabeledGraph n) : toLabels G.toSnapshots = G :
 
 /--
 ---
-conclusion: Lax330177.Paths.strict_inclusion
+conclusion: Lax330177.StrictInclusion.strict_inclusion
 ---
 Take a strict path between the two vertices and keep its vertices and departure times. Every strict increase is also a weak increase, so the same path witnesses nonstrict reachability.
 -/
@@ -31,15 +33,20 @@ theorem strict_inclusion {n} {G : Graph n} {u v} : Reaches G .strict u v → Rea
 
 /--
 ---
-conclusion: Lax330177.Paths.proper_modes
+conclusion: Lax330177.ProperModes.proper_modes
 ---
-A strict path also satisfies the nonstrict timing rule. For the converse, take a nonstrict path. Consecutive edges meet at a vertex and are distinct because a path never repeats a vertex. Properness prevents them from appearing at the same time. Their weakly increasing times must therefore increase strictly, giving a strict path with the same endpoints.
+A strict path also satisfies the nonstrict timing rule. For the converse, take a nonstrict path. Consecutive edges form a two-step path with distinct outer vertices. Properness prevents both steps from using the same time. Their weakly increasing times must therefore increase strictly, giving a strict path with the same endpoints.
 -/
-theorem proper_modes {n} (G : Graph n) (d : Direction) (h : IsProper d G) (u v) : Reaches G .strict u v ↔ Reaches G .nonstrict u v := proper_reaches_iff d h u v
+theorem proper_modes {n} (G : Graph n) (d : Direction) (h : IsProper d G) (u v) : Reaches G .strict u v ↔ Reaches G .nonstrict u v  := by
+  constructor
+  · exact Lax330177.StrictInclusion.strict_inclusion
+  · rintro ⟨k,w,hp,hs,hf⟩
+    have ho := Lax330177.ProperPathTimes.proper_path_times G d h ⟨w,hp⟩
+    exact ⟨k,⟨w.vertex,w.time,w.available,ho⟩,hp,hs,hf⟩
 
 /--
 ---
-conclusion: Lax330177.Durations.uniform_modes
+conclusion: Lax330177.UniformModes.uniform_modes
 ---
 Suppose one traversal departs at time a and a later traversal departs at b. With traversal time zero the first arrival is a, so feasibility requires a ≤ b. With traversal time one the arrival is a + 1. Since timestamps are integers, a + 1 ≤ b holds exactly when a < b. Applying this to every pair of steps gives both equivalences.
 -/
@@ -47,7 +54,7 @@ theorem uniform_modes {k} (t : Fin k → ℕ) (m : TraversalMode) : Feasible t (
 
 /--
 ---
-conclusion: Lax330177.Examples.bounce_same_time
+conclusion: Lax330177.BounceSameTime.bounce_same_time
 ---
 Use a graph on two vertices with one undirected edge. It is proper because there is no second edge incident to either endpoint. A walk can cross that edge and immediately cross it back at the same timestamp. Its two equal departure times satisfy the nonstrict rule and violate the strict rule.
 -/
@@ -55,21 +62,21 @@ theorem bounce_same_time : IsProper .undirected repeatedEdge ∧ ¬ StrictMono s
 
 /--
 ---
-conclusion: Lax330177.Examples.chain_failure
+conclusion: Lax330177.ChainFailure.chain_failure
 ---
 On the undirected chain 0–1–2, edge 0–1 appears at time 1 and edge 1–2 at time 0. Each edge alone gives reachability between its endpoints in either mode. But the only path from 0 to 2 would have to use time 1 before time 0. Thus 0 reaches 1 and 1 reaches 2, while 0 cannot reach 2.
 -/
 theorem chain_failure (m : TraversalMode) : ¬ (∀ u v z, Reaches backwardsChain m u v → Reaches backwardsChain m v z → Reaches backwardsChain m u z) := by cases m <;> first | exact strict_reachability_not_transitive | exact nonstrict_reachability_not_transitive
 /--
 ---
-conclusion: Lax330177.Representations.stream_edges
+conclusion: Lax330177.StreamEdges.stream_edges
 ---
 List one event for every arc in every snapshot, then sort the list by time. Sorting preserves membership. Looking for the event with time t and endpoints u and v therefore succeeds exactly when the original snapshot at t contains the arc from u to v.
 -/
 theorem stream_edges {n} (G : Graph n) (t : Fin G.lifetime) (u v : Fin n) : (streamOf G).snapshots.edge t u v ↔ G.edge t u v := by simp [streamOf, EventStream.snapshots, occurrences]
 /--
 ---
-conclusion: Lax330177.Durations.uniform_reaches
+conclusion: Lax330177.UniformReaches.uniform_reaches
 ---
 Choose a path witnessing reachability. With uniform traversal time one, feasibility requires strictly increasing integer departures. With time zero, it requires weakly increasing departures. In either case the same timed path witnesses reachability in the corresponding mode. Reading the timing equivalence in reverse gives the converse.
 -/
@@ -81,24 +88,23 @@ theorem uniform_reaches {n} (G : Graph n) (m : TraversalMode) (u v) : DurationRe
     exact ⟨k,w.vertex,w.time,⟨hp,w.available,(uniform_modes _ m).mpr w.ordered⟩,hs,hf⟩
 /--
 ---
-conclusion: Lax330177.Paths.bidirect_paths
+conclusion: Lax330177.BidirectPaths.bidirect_paths
 ---
 An undirected snapshot allows each active edge to be traversed in either direction. Replacing it by its two directed arcs permits exactly the same ordered steps at exactly the same times. The conditions on repeated vertices and on departure order are unchanged, so every timed path is preserved in both directions.
 -/
 theorem bidirect_paths {n s} (G : InterpretedGraph n s) (_ : s.direction = .undirected) (k : ℕ) : TemporalPath (bidirect G).graph s.mode k = TemporalPath G.graph s.mode k := rfl
 /--
 ---
-conclusion: Lax330177.Examples.simple_separation
+conclusion: Lax330177.SimpleSeparation.simple_separation
 ---
-Let the only arcs be 0 → 1 and 1 → 2, both at time 0. Each has one label, so the graph is simple. They meet at vertex 1 at the same time, so it fails properness. Taking both arcs at time 0 reaches vertex 2 nonstrictly from 0. A strict path would need two distinct times, since there is no direct arc.
+Let the only arcs be 0 → 1 and 1 → 2, both at time 0. Each has one label, so the graph is simple. They form a two-step path from 0 to 2 at the same time, so it fails properness. Taking both arcs at time 0 reaches vertex 2 nonstrictly from 0. A strict path would need two distinct times, since there is no direct arc.
 -/
 theorem simple_separation : IsSimple simultaneousChain ∧ ¬ IsProper .directed simultaneousChain ∧ Reaches simultaneousChain .nonstrict 0 2 ∧ ¬ Reaches simultaneousChain .strict 0 2 := by
   refine ⟨fun _ _ _ _ _ _ => Subsingleton.elim .., ?_, ⟨2,chainPath,Function.injective_id,rfl,rfl⟩, ?_⟩
   · intro h
-    have he := h.2 0 0 1 1 2 (by decide) (by decide) (by decide)
-    exact (by unfold SameStaticEdge; decide : ¬ SameStaticEdge .directed (0 : Fin 3) 1 1 2) he
+    exact (by decide : (0 : Fin 3) ≠ 2) (h.2 0 0 1 2 (by decide) (by decide))
   · rintro ⟨k,w,hp,hs,hf⟩
-    have hb := w.path_length_bound hp
+    have hb := path_length_bound w hp
     have hk : k ≤ 2 := by omega
     interval_cases k
     · exact (by decide : (0 : Fin 3) ≠ 2) (hs.symm.trans hf)
@@ -112,20 +118,18 @@ theorem simple_separation : IsSimple simultaneousChain ∧ ¬ IsProper .directed
       exact (lt_irrefl _) h
 /--
 ---
-conclusion: Lax330177.Examples.proper_separation
+conclusion: Lax330177.ProperSeparation.proper_separation
 ---
-Let the single undirected edge between 0 and 1 appear at times 0 and 1. Each snapshot contains just that edge, so the graph is proper. Its two labels violate simplicity. If we read the same snapshots as directed, the two opposite arcs are distinct and simultaneous and share endpoints, violating directed properness.
+Let the single undirected edge between 0 and 1 appear at times 0 and 1. Each snapshot contains just that edge, so the graph is proper. Its two labels violate simplicity. In the directed interpretation, every two-step traversal returns to its starting vertex, so properness also holds there.
 -/
-theorem proper_separation : IsProper .undirected repeatedEdge ∧ ¬ IsSimple repeatedEdge ∧ ¬ IsProper .directed repeatedEdge := by
+theorem proper_separation : IsProper .undirected repeatedEdge ∧ ¬ IsSimple repeatedEdge ∧ IsProper .directed repeatedEdge := by
   refine ⟨repeatedEdge_proper, ?_, ?_⟩
   · intro h
     exact (by decide : (0 : Fin 2) ≠ 1) (h 0 1 0 1 (by decide) (by decide))
-  · intro h
-    exact (by unfold SameStaticEdge; decide : ¬ SameStaticEdge .directed (0 : Fin 2) 1 1 0)
-      (h.2 0 0 1 1 0 (by decide) (by decide) (by decide))
+  · exact ⟨trivial,repeatedEdge_proper.2⟩
 /--
 ---
-conclusion: Lax330177.Paths.walk_path_reach
+conclusion: Lax330177.WalkPathReach.walk_path_reach
 ---
 If a walk visits a vertex twice, delete the steps between those visits. The remaining prefix and suffix join at the same vertex. Their departure times form a subsequence of the original times, so they still satisfy the chosen timing rule. Each deletion shortens the walk and preserves its endpoints. Eventually no vertex repeats, giving a path. Conversely, every path is already a walk.
 -/
@@ -185,7 +189,7 @@ theorem walk_path_reach {n} (G : Graph n) (m : TraversalMode) (u v) : WalkReache
     exact ⟨k,w,hs,hf⟩
 /--
 ---
-conclusion: Lax330177.Durations.uniform_paths
+conclusion: Lax330177.UniformPaths.uniform_paths
 ---
 Fix the vertex sequence and its departure times. Both path definitions require distinct vertices and an available edge at every departure. For uniform time zero, arrival before or at the next departure means that departure times are weakly increasing. For uniform time one, it means that the integer times are strictly increasing. Thus the same sequences satisfy either description exactly in the stated mode.
 -/
@@ -197,14 +201,14 @@ theorem uniform_paths {n k} (G : Graph n) (m : TraversalMode) (x : Fin (k+1) →
     exact ⟨hp,w.available,(uniform_modes _ m).mpr w.ordered⟩
 /--
 ---
-conclusion: Lax330177.Paths.proper_path_times
+conclusion: Lax330177.ProperPathTimes.proper_path_times
 ---
-Two consecutive edges of a path share their middle vertex. They must be distinct, since traversing the same edge twice would repeat a vertex. Properness therefore forbids equal departure times on consecutive edges. Since the times are already weakly increasing, each is strictly smaller than its successor.
+Consecutive steps have the form u → v → w with u and w distinct because the path never repeats a vertex. Properness forbids equal departure times for these two steps. Since the times are already weakly increasing, each is strictly smaller than its successor.
 -/
-theorem proper_path_times {n k} (G : Graph n) (d : Direction) (hg : IsProper d G) (w : TemporalPath G .nonstrict k) : StrictMono w.val.time := w.val.proper_trail_strict d hg (w.val.path_staticTrail d w.property)
+theorem proper_path_times {n k} (G : Graph n) (d : Direction) (hg : IsProper d G) (w : TemporalPath G .nonstrict k) : StrictMono w.val.time := proper_path_strict d w.val hg w.property
 /--
 ---
-conclusion: Lax330177.Representations.stream_roundtrip
+conclusion: Lax330177.StreamRoundtrip.stream_roundtrip
 ---
 Forming snapshots from the stream records exactly which triples of time and endpoints occur. Converting back lists each recorded triple once. The original stream also lists each triple once, so the two lists are permutations of each other. Both are chronological, hence their orders can differ only among events at the same time.
 -/
@@ -214,7 +218,7 @@ theorem stream_roundtrip {n h} (s : EventStream n h) : (streamOf s.snapshots).ev
   exact stream_edges s.snapshots t u v
 /--
 ---
-conclusion: Lax330177.Paths.support_reach
+conclusion: Lax330177.SupportReach.support_reach
 ---
 Take the ordered vertex sequence of a path witnessing reachability in the first graph. Support equivalence supplies a path with that same sequence in the second graph, so its first and last vertices are the required endpoints. Exchanging the graphs proves the reverse implication.
 -/
@@ -226,7 +230,7 @@ theorem support_reach {n} (G H : Graph n) (m l : TraversalMode) (h : SupportEqui
     exact ⟨k,z.val,z.property,(congrFun hz 0).trans hs,(congrFun hz _).trans hf⟩
 /--
 ---
-conclusion: Lax330177.Examples.happy_asymmetry
+conclusion: Lax330177.HappyAsymmetry.happy_asymmetry
 ---
 Give the undirected edge 1–2 time 0 and the edge 0–1 time 1. Each edge has one label and each snapshot contains just one edge, so the graph is happy. From 2 to 0 the chain uses times 0 then 1, valid in both modes. From 0 to 2 the only possible path requires those times in decreasing order.
 -/
@@ -237,7 +241,7 @@ theorem happy_asymmetry (m : TraversalMode) : IsHappy .undirected backwardsChain
     · intro u v t s ht hs; grind
     · constructor
       · intro t u v; grind
-      · intro t u v x y huv hxy hshare; grind
+      · intro t u v w huv hvw; grind
   have hr : Reaches backwardsChain .strict 2 0 :=
     ⟨2,reverseChainPath,by change Function.Injective ![(2 : Fin 3),1,0]; decide,rfl,rfl⟩
   exact ⟨happy,by cases m <;> first | exact hr | exact strict_reaches_nonstrict hr,not_reaches_endpoints m⟩

@@ -8,6 +8,20 @@ title: Paths, walks and reachability
 type: definition
 ---
 Walks may revisit vertices. Paths have injective vertex sequences. Departure times increase strictly or weakly according to the traversal mode.
+
+- [Walks and paths have the same reachability.](Lax330177Proofs.Basic.walk_path_reach.html) In either traversal mode, a temporal walk from u to v exists exactly when a temporal path from u to v exists.
+- [Strict paths give nonstrict reachability.](Lax330177Proofs.Basic.strict_inclusion.html) If u can reach v by a strict temporal path, then u can also reach v by a nonstrict temporal path in the same graph.
+- [Departure times on a proper graph.](Lax330177Proofs.Basic.proper_path_times.html) On a proper directed or undirected graph, every nonstrict temporal path already has strictly increasing departure times.
+- [Reachability on a proper graph.](Lax330177Proofs.Basic.proper_modes.html) On a proper directed or undirected graph, u reaches v strictly exactly when u reaches v nonstrictly.
+- [Replacing undirected edges by opposite arcs.](Lax330177Proofs.Basic.bidirect_paths.html) Replacing each undirected edge occurrence by both directed orientations preserves exactly the same timed paths of every length in the chosen traversal mode.
+- [Path supports determine reachability.](Lax330177Proofs.Basic.support_reach.html) If two graphs on the same vertices realize exactly the same ordered vertex sequences as temporal paths in their respective modes, then they have the same reachability relation.
+- [Temporal reachability is reflexive.](Lax330177.Reflexivity.html) Every vertex reaches itself in both modes, including at lifetime zero.
+- [Enlarging the allowed vertex set.](Lax330177.RestrictedMonotonicity.html) A path restricted to C remains feasible in any vertex superset D.
+- [Allowing all vertices.](Lax330177.UnrestrictedVertices.html) Restricting the path to the full vertex set recovers ordinary temporal reachability.
+- [Paths are static-edge trails.](Lax330177.PathTrail.html) A vertex-simple path never uses a footprint edge twice, even counting reverse traversals as the same undirected edge.
+- [Static-edge trails are temporal-edge trails.](Lax330177.TrailInclusion.html) A walk that never repeats a static edge never repeats an edge-time occurrence.
+- [Strict walks are temporal-edge trails.](Lax330177.StrictWalkTrail.html) A strict walk never repeats an edge-time occurrence.
+- [Properness of symmetric snapshots.](Lax330177.SymmetricProper.html) On symmetric snapshots, directed properness is equivalent to undirected properness.
 -/
 namespace Lax330177.Paths
 open Lax330177.Representations
@@ -52,12 +66,6 @@ def nil (G : Graph n) (mode : TraversalMode) (v : Fin n) : Walk G mode 0 where
   available := by intro i; exact Fin.elim0 i
   ordered := by intro i; exact Fin.elim0 i
 
-@[simp] theorem nil_start (G : Graph n) (mode : TraversalMode) (v : Fin n) :
-    (nil G mode v).start = v := rfl
-@[simp] theorem nil_finish (G : Graph n) (mode : TraversalMode) (v : Fin n) :
-    (nil G mode v).finish = v := rfl
-theorem nil_isPath (G : Graph n) (mode : TraversalMode) (v : Fin n) :
-    (nil G mode v).IsPath := by intro i j _; apply Fin.ext; omega
 
 def forgetStrict (w : Walk G .strict k) : Walk G .nonstrict k where
   vertex := w.vertex
@@ -65,76 +73,11 @@ def forgetStrict (w : Walk G .strict k) : Walk G .nonstrict k where
   available := w.available
   ordered := by intro i j h; exact Nat.le_of_lt (w.ordered i j h)
 
-theorem staticTrail_temporalTrail (d : Direction) (w : Walk G mode k)
-    (h : w.IsStaticEdgeTrail d) : w.IsTemporalEdgeTrail d := by
-  intro i j he _; exact h i j he
 
-theorem path_staticTrail (d : Direction) (w : Walk G mode k) (hp : w.IsPath) :
-    w.IsStaticEdgeTrail d := by
-  intro i j he
-  cases d with
-  | directed =>
-    have h := congrArg Fin.val (hp he.1)
-    exact Fin.ext h
-  | undirected =>
-    rcases he with he | he
-    · exact Fin.ext (congrArg (fun x : Fin (k + 1) => x.val) (hp he.1))
-    · have h1 := congrArg Fin.val (hp he.1)
-      have h2 := congrArg Fin.val (hp he.2)
-      simp only [Fin.val_castSucc, Fin.val_succ] at h1 h2
-      omega
 
-theorem path_length_bound (w : Walk G mode k) (hp : w.IsPath) : k + 1 ≤ n := by
-  have h := Fintype.card_le_of_injective w.vertex hp
-  simpa using h
 
-theorem proper_trail_strict (d : Direction) (w : Walk G .nonstrict k)
-    (hg : IsProper d G) (hw : w.IsStaticEdgeTrail d) : StrictMono w.time := by
-  intro i j hij
-  have hle : (w.time i).val ≤ (w.time j).val := w.ordered i j hij
-  by_contra hn
-  have heq : (w.time i).val = (w.time j).val := by
-    change ¬ (w.time i).val < (w.time j).val at hn
-    omega
-  let r : Fin k := ⟨i.val + 1, by have := j.isLt; change i.val < j.val at hij; omega⟩
-  have hir : i < r := by change i.val < i.val + 1; omega
-  have hrj : r ≤ j := by change i.val + 1 ≤ j.val; change i.val < j.val at hij; omega
-  have ht1 : (w.time i).val ≤ (w.time r).val := w.ordered i r hir
-  have ht2 : (w.time r).val ≤ (w.time j).val := by
-    rcases lt_or_eq_of_le hrj with h | h
-    · exact w.ordered r j h
-    · rw [h]
-  have ht : w.time r = w.time i := Fin.ext (by omega)
-  have har := w.available r
-  rw [ht] at har
-  have shared : w.vertex i.succ = w.vertex r.castSucc := by
-    apply congrArg w.vertex
-    apply Fin.ext
-    rfl
-  have he := hg.2 (w.time i) _ _ _ _ (w.available i) har (Or.inr (Or.inr (Or.inl shared)))
-  have hi := hw i r he
-  exact (ne_of_lt hir) hi
 
-def strictify (d : Direction) (w : Walk G .nonstrict k)
-    (hg : IsProper d G) (hw : w.IsStaticEdgeTrail d) : Walk G .strict k where
-  vertex := w.vertex
-  time := w.time
-  available := w.available
-  ordered := proper_trail_strict d w hg hw
 
-theorem strict_temporalTrail (d : Direction) (w : Walk G .strict k) :
-    w.IsTemporalEdgeTrail d := by
-  intro i j _ he
-  by_contra hn
-  rcases lt_or_gt_of_ne hn with h | h
-  · have ht := w.ordered i j h
-    simp only [TimeLE] at ht
-    rw [he] at ht
-    exact Nat.lt_irrefl _ ht
-  · have ht := w.ordered j i h
-    simp only [TimeLE] at ht
-    rw [he] at ht
-    exact Nat.lt_irrefl _ ht
 
 /-- A contiguous segment, including its two endpoints. -/
 def segment (w : Walk G mode k) (a len : ℕ) (h : a + len ≤ k) :
@@ -165,39 +108,11 @@ def ReachesDuring {n : ℕ} (G : Graph n) (mode : TraversalMode)
     (a b : ℕ) (u v : Fin n) : Prop :=
   ∃ k, ∃ w : Walk G mode k, w.IsPath ∧ w.InWindow a b ∧ w.start = u ∧ w.finish = v
 
-theorem reaches_refl {n : ℕ} (G : Graph n) (mode : TraversalMode) (u : Fin n) :
-    Reaches G mode u u := ⟨0, Walk.nil G mode u, Walk.nil_isPath G mode u, rfl, rfl⟩
 
-theorem reachesIn_reaches {n : ℕ} {G : Graph n} {mode : TraversalMode}
-    {C : Finset (Fin n)} {u v : Fin n} (h : ReachesIn G mode C u v) :
-    Reaches G mode u v := by
-  obtain ⟨k, w, hp, _, hs, ht⟩ := h
-  exact ⟨k, w, hp, hs, ht⟩
 
-theorem reachesIn_mono {n : ℕ} {G : Graph n} {mode : TraversalMode}
-    {C D : Finset (Fin n)} (hCD : C ⊆ D) {u v : Fin n}
-    (h : ReachesIn G mode C u v) : ReachesIn G mode D u v := by
-  obtain ⟨k, w, hp, hC, hs, ht⟩ := h
-  exact ⟨k, w, hp, fun i => hCD (hC i), hs, ht⟩
 
-theorem reachesIn_univ {n : ℕ} (G : Graph n) (mode : TraversalMode) (u v : Fin n) :
-    ReachesIn G mode Finset.univ u v ↔ Reaches G mode u v := by
-  constructor
-  · exact reachesIn_reaches
-  · rintro ⟨k, w, hp, hs, ht⟩
-    exact ⟨k, w, hp, fun _ => Finset.mem_univ _, hs, ht⟩
 
-theorem strict_reaches_nonstrict {n : ℕ} {G : Graph n} {u v : Fin n}
-    (h : Reaches G .strict u v) : Reaches G .nonstrict u v := by
-  obtain ⟨k, w, hp, hs, ht⟩ := h
-  exact ⟨k, w.forgetStrict, hp, hs, ht⟩
 
-theorem proper_reaches_iff {n : ℕ} {G : Graph n} (d : Direction) (hg : IsProper d G)
-    (u v : Fin n) : Reaches G .strict u v ↔ Reaches G .nonstrict u v := by
-  constructor
-  · exact strict_reaches_nonstrict
-  · rintro ⟨k, w, hp, hs, ht⟩
-    exact ⟨k, w.strictify d hg (w.path_staticTrail d hp), hp, hs, ht⟩
 
 abbrev TemporalPath {n} (G : Graph n) (m : TraversalMode) (k : ℕ) := {w : Walk G m k // w.IsPath}
 abbrev StrictPath {n} (G : Graph n) := TemporalPath G .strict
@@ -207,20 +122,15 @@ abbrev NonstrictReachability {n} (G : Graph n) := Reaches G .nonstrict
 
 def graphReaches {n s} (G : InterpretedGraph n s) := Reaches G.graph s.mode
 
-axiom strict_inclusion {n} {G : Graph n} {u v} : Reaches G .strict u v → Reaches G .nonstrict u v
 
-axiom proper_modes {n} (G : Graph n) (d : Direction) (h : IsProper d G) (u v) : Reaches G .strict u v ↔ Reaches G .nonstrict u v
 
 def bidirect {n} {s : Setting} (G : InterpretedGraph n s) :
-    InterpretedGraph n { s with direction := .directed, requireProper := false } where
+    InterpretedGraph n { s with direction := .directed } where
   graph := G.graph
-  admitted := ⟨trivial, G.admitted.2.1, by simp⟩
+  admitted := ⟨trivial, G.admitted.2.1, fun h => ⟨trivial, (G.admitted.2.2 h).2⟩⟩
 
-axiom bidirect_paths {n s} (G : InterpretedGraph n s) (_ : s.direction = .undirected) (k : ℕ) : TemporalPath (bidirect G).graph s.mode k = TemporalPath G.graph s.mode k
 
-axiom walk_path_reach {n} (G : Graph n) (m : TraversalMode) (u v) : WalkReaches G m u v ↔ Reaches G m u v
 
-axiom proper_path_times {n k} (G : Graph n) (d : Direction) (hg : IsProper d G) (w : TemporalPath G .nonstrict k) : StrictMono w.val.time
 
 def Realizes {n k} (G : Graph n) (m : TraversalMode) (x : Fin (k+1) → Fin n) :=
   ∃ w : TemporalPath G m k, w.val.vertex = x
@@ -228,7 +138,6 @@ def Realizes {n k} (G : Graph n) (m : TraversalMode) (x : Fin (k+1) → Fin n) :
 def SupportEquivalent {n} (G H : Graph n) (m l : TraversalMode) :=
   ∀ k (x : Fin (k+1) → Fin n), Realizes G m x ↔ Realizes H l x
 
-axiom support_reach {n} (G H : Graph n) (m l : TraversalMode) (h : SupportEquivalent G H m l) (u v) : Reaches G m u v ↔ Reaches H l u v
 
 end
 end Lax330177.Paths

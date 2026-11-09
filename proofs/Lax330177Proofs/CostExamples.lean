@@ -1,3 +1,6 @@
+import Lax330177.DirectChoices
+import Lax330177.SlowShortest
+import Lax330177.NoWaitDetour
 import Lax330177.CostExamples
 import Lax330177Proofs.UniformCosts
 namespace Lax330177Proofs.CostExamples
@@ -24,7 +27,7 @@ private theorem direct_best (late : Bool) (c : Fin 2) :
 
 /--
 ---
-conclusion: Lax330177.CostExamples.direct_choices
+conclusion: Lax330177.DirectChoices.direct_choices
 ---
 Vertices 0 and 2 are distinct, so every path needs at least one traversal and takes at least c time units. A direct traversal attains both bounds and has zero waiting, whether it departs at 0 or at 3. Departing at 0 gives arrival c, the earliest possible from release time 0. Departing at 3 uses the last available snapshot. Comparing the two direct paths shows that the early one loses on latest departure and the late one loses on foremost arrival.
 -/
@@ -54,7 +57,7 @@ theorem direct_choices (c : Fin 2) :
 
 /--
 ---
-conclusion: Lax330177.CostExamples.slow_shortest
+conclusion: Lax330177.SlowShortest.slow_shortest
 ---
 Without the shortcut, every path from 0 to 2 must traverse both arcs of the chain. Departing at times 0 and 3 therefore gives a shortest path, but it waits at vertex 1 from time c until time 3. Departing instead at 0 and c removes that positive wait while keeping both traversals. This second path both waits less and finishes sooner, for c equal to zero or one.
 -/
@@ -81,7 +84,7 @@ theorem slow_shortest (c : Fin 2) : Shortest (via false true c) ∧
 
 /--
 ---
-conclusion: Lax330177.CostExamples.no_wait_detour
+conclusion: Lax330177.NoWaitDetour.no_wait_detour
 ---
 Depart on the two arcs at times 0 and c. The second departure is exactly the first arrival, so total waiting is zero, the least possible. The direct arc uses one hop instead of two. With c equal to zero the detour also takes zero elapsed time and is fastest. With c equal to one it takes two units, while the direct arc takes only one.
 -/

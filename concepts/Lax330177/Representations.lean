@@ -6,6 +6,12 @@ title: Three representations of temporal graphs
 type: definition
 ---
 A finite lifetime includes empty snapshots. Chronological lists enumerate distinct arc occurrences. Ties can be permuted. Undirected edges have both orientations.
+
+- [Snapshots to labels and back.](Lax330177Proofs.Basic.snapshots_labels.html) Starting from snapshots, collecting the appearance times of each arc and reconstructing the snapshots recovers the original graph, including its lifetime.
+- [Labels to snapshots and back.](Lax330177Proofs.Basic.labels_snapshots.html) Starting from a time-labelled footprint, taking its snapshots and collecting the labels again recovers the original footprint, label sets, and lifetime.
+- [Events and adjacency.](Lax330177Proofs.Basic.stream_edges.html) At every time t, the snapshot reconstructed from the chronological event list contains the arc from u to v exactly when the original snapshot at t contains that arc.
+- [Recovering an event list.](Lax330177Proofs.Basic.stream_roundtrip.html) Converting a chronological event list to snapshots and back preserves every event with its multiplicity. Only the order of events at the same time can change.
+- [Snapshot adjacency and edge labels.](Lax330177.ActiveLabel.html) An arc is active at time t exactly when its label set contains t.
 -/
 namespace Lax330177.Representations
 noncomputable section
@@ -63,34 +69,8 @@ def LabeledGraph.toSnapshots {n : ℕ} (G : LabeledGraph n) : Graph n where
     intro t u h
     exact G.loopless u ((G.supported u u).mpr ⟨t, h⟩)
 
-@[simp] theorem snapshot_label_edge {n : ℕ} (G : Graph n)
-    (t : Fin G.lifetime) (u v : Fin n) :
-    (toLabels G).toSnapshots.edge t u v ↔ G.edge t u v := by
-  simp [toLabels, LabeledGraph.toSnapshots]
 
-@[simp] theorem snapshot_roundtrip {n : ℕ} (G : Graph n) :
-    (toLabels G).toSnapshots = G := by
-  cases G with
-  | mk l e h =>
-    simp only [toLabels, LabeledGraph.toSnapshots]
-    congr 1
-    funext t u v
-    exact propext ⟨fun h => (Finset.mem_filter.mp h).2,
-      fun h => Finset.mem_filter.mpr ⟨Finset.mem_univ _, h⟩⟩
 
-@[simp] theorem label_roundtrip {n : ℕ} (G : LabeledGraph n) :
-    toLabels G.toSnapshots = G := by
-  cases G with
-  | mk l e labels supported loopless =>
-    dsimp [toLabels, LabeledGraph.toSnapshots, Footprint]
-    congr 1
-    · funext u v
-      exact propext (supported u v).symm
-    · funext u v
-      calc
-        _ = Finset.univ.filter (fun t => t ∈ labels u v) :=
-          Finset.filter_congr_decidable _ _ _
-        _ = labels u v := by ext t; simp
 
 structure EventStream (n h : ℕ) where
   events : List (Fin h × Fin n × Fin n)
@@ -103,9 +83,7 @@ def EventStream.snapshots {n h} (s : EventStream n h) : Graph n where
   edge t u v := (t,u,v) ∈ s.events
   loopless := by intro t u he; exact s.loopless _ he rfl
 
-axiom snapshots_labels {n} (G : Graph n) : (toLabels G).toSnapshots = G
 
-axiom labels_snapshots {n} (G : LabeledGraph n) : toLabels G.toSnapshots = G
 
 def occurrences {n} (G : Graph n) :=
   Finset.univ.filter (fun e : Fin G.lifetime × Fin n × Fin n => G.edge e.1 e.2.1 e.2.2)
@@ -124,9 +102,7 @@ def streamOf {n} (G : Graph n) : EventStream n G.lifetime := by
     subst v
     exact G.loopless t u (by simpa [xs, occurrences] using he)
 
-axiom stream_edges {n} (G : Graph n) (t : Fin G.lifetime) (u v : Fin n) : (streamOf G).snapshots.edge t u v ↔ G.edge t u v
 
-axiom stream_roundtrip {n h} (s : EventStream n h) : (streamOf s.snapshots).events.Perm s.events
 
 end
 end Lax330177.Representations

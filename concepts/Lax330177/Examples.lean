@@ -9,6 +9,13 @@ title: Counterexamples
 type: definition
 ---
 A single repeated edge admits a simultaneous return walk under properness. A chain in reverse chronological order witnesses failure of transitivity.
+
+- [A simple graph can separate the traversal modes.](Lax330177Proofs.Basic.simple_separation.html) The directed chain with both arcs available only at time 0 is simple and fails properness. Its first vertex reaches its last nonstrictly but cannot reach it strictly.
+- [Properness does not imply simplicity.](Lax330177Proofs.Basic.proper_separation.html) One undirected edge appearing twice gives a proper graph that fails simplicity. The two opposite directed arcs are proper as well, since every two-step traversal returns to its starting vertex.
+- [A proper graph can have a walk with equal departure times.](Lax330177Proofs.Basic.bounce_same_time.html) On a proper undirected graph, a nonstrict walk can traverse one edge and immediately traverse it back at the same time.
+- [Reachability can fail transitivity.](Lax330177Proofs.Basic.chain_failure.html) In both traversal modes, the same three-vertex chain has 0 reaching 1 and 1 reaching 2, although 0 cannot reach 2.
+- [Reachability can be asymmetric even on a happy graph.](Lax330177Proofs.Basic.happy_asymmetry.html) The undirected chain with edge 1–2 at time 0 and edge 0–1 at time 1 is simple and proper. In both modes, 2 reaches 0 while 0 cannot reach 2.
+- [A temporal-edge trail can repeat a static edge.](Lax330177.TrailSeparation.html) Crossing one undirected edge at time 0 and returning at time 1 gives a temporal-edge trail that repeats its static edge.
 -/
 namespace Lax330177.Examples
 open Lax330177.Representations
@@ -27,24 +34,8 @@ def bounce : Walk repeatedEdge .strict 2 where
   available := by intro i; fin_cases i <;> decide
   ordered := by intro i j h; exact h
 
-theorem bounce_temporalTrail : bounce.IsTemporalEdgeTrail .undirected :=
-  bounce.strict_temporalTrail .undirected
 
-theorem bounce_not_staticTrail : ¬ bounce.IsStaticEdgeTrail .undirected := by
-  intro h
-  have he : SameStaticEdge .undirected
-      (bounce.vertex (0 : Fin 2).castSucc) (bounce.vertex (0 : Fin 2).succ)
-      (bounce.vertex (1 : Fin 2).castSucc) (bounce.vertex (1 : Fin 2).succ) := by
-    exact Or.inr ⟨rfl, rfl⟩
-  have hi := h 0 1 he
-  exact (by decide : (0 : Fin 2) ≠ 1) hi
 
-theorem repeatedEdge_proper : IsProper .undirected repeatedEdge := by
-  constructor
-  · intro t u v; exact ne_comm
-  · intro t u v x y h1 h2 _
-    fin_cases u <;> fin_cases v <;> fin_cases x <;> fin_cases y <;>
-      simp_all [SameStaticEdge]
 
 def simultaneousBounce : Walk repeatedEdge .nonstrict 2 where
   vertex := ![0, 1, 0]
@@ -52,10 +43,6 @@ def simultaneousBounce : Walk repeatedEdge .nonstrict 2 where
   available := by intro i; fin_cases i <;> decide
   ordered := by intro i j _; exact le_refl _
 
-theorem proper_walk_need_not_be_strict : ¬ StrictMono simultaneousBounce.time := by
-  intro h
-  have he := h (show (0 : Fin 2) < 1 by decide)
-  exact (lt_irrefl (0 : Fin 2)) he
 
 abbrev backwardsChain : Graph 3 where
   lifetime := 2
@@ -76,52 +63,11 @@ def secondLeg : Walk backwardsChain .strict 1 where
   available := by intro i; fin_cases i; decide
   ordered := by intro i j h; have := i.isLt; have := j.isLt; change i.val < j.val at h; omega
 
-theorem reaches_first : Reaches backwardsChain .strict 0 1 := by
-  refine ⟨1, firstLeg, ?_, rfl, rfl⟩
-  intro i j h
-  fin_cases i <;> fin_cases j <;> simp_all [firstLeg]
 
-theorem reaches_second : Reaches backwardsChain .strict 1 2 := by
-  refine ⟨1, secondLeg, ?_, rfl, rfl⟩
-  intro i j h
-  fin_cases i <;> fin_cases j <;> simp_all [secondLeg]
 
-theorem not_reaches_endpoints (mode : TraversalMode) : ¬ Reaches backwardsChain mode 0 2 := by
-  rintro ⟨k, w, hp, hs, ht⟩
-  have hb := w.path_length_bound hp
-  have hk : k ≤ 2 := by omega
-  interval_cases k
-  · have he : (0 : Fin 3) = 2 := hs.symm.trans ht
-    exact (by decide : (0 : Fin 3) ≠ 2) he
-  · have he := w.available 0
-    change backwardsChain.edge (w.time 0) w.start w.finish at he
-    rw [hs, ht] at he
-    simp [backwardsChain] at he
-  · have h0 := w.available (0 : Fin 2)
-    have h1 := w.available (1 : Fin 2)
-    change backwardsChain.edge (w.time 0) w.start (w.vertex 1) at h0
-    change backwardsChain.edge (w.time 1) (w.vertex 1) w.finish at h1
-    rw [hs] at h0
-    rw [ht] at h1
-    have ho := w.ordered (0 : Fin 2) 1 (by decide)
-    simp [backwardsChain] at h0 h1
-    cases mode <;> simp_all [TimeLE]
 
-theorem strict_reachability_not_transitive :
-    ¬ (∀ u v z, Reaches backwardsChain .strict u v → Reaches backwardsChain .strict v z →
-      Reaches backwardsChain .strict u z) := by
-  intro h
-  exact not_reaches_endpoints .strict (h 0 1 2 reaches_first reaches_second)
-theorem nonstrict_reachability_not_transitive :
-    ¬ (∀ u v z, Reaches backwardsChain .nonstrict u v → Reaches backwardsChain .nonstrict v z →
-      Reaches backwardsChain .nonstrict u z) := by
-  intro h
-  exact not_reaches_endpoints .nonstrict
-    (h 0 1 2 (strict_reaches_nonstrict reaches_first) (strict_reaches_nonstrict reaches_second))
 
-axiom bounce_same_time : IsProper .undirected repeatedEdge ∧ ¬ StrictMono simultaneousBounce.time
 
-axiom chain_failure (m : TraversalMode) : ¬ (∀ u v z, Reaches backwardsChain m u v → Reaches backwardsChain m v z → Reaches backwardsChain m u z)
 
 abbrev simultaneousChain : Graph 3 where
   lifetime := 1
@@ -134,9 +80,7 @@ def chainPath : Walk simultaneousChain .nonstrict 2 where
   available := by intro i; fin_cases i <;> decide
   ordered := by intro i j h; exact le_rfl
 
-axiom simple_separation : IsSimple simultaneousChain ∧ ¬ IsProper .directed simultaneousChain ∧ Reaches simultaneousChain .nonstrict 0 2 ∧ ¬ Reaches simultaneousChain .strict 0 2
 
-axiom proper_separation : IsProper .undirected repeatedEdge ∧ ¬ IsSimple repeatedEdge ∧ ¬ IsProper .directed repeatedEdge
 
 def reverseChainPath : Walk backwardsChain .strict 2 where
   vertex := ![2,1,0]
@@ -144,7 +88,6 @@ def reverseChainPath : Walk backwardsChain .strict 2 where
   available := by intro i; fin_cases i <;> decide
   ordered := by intro i j h; exact h
 
-axiom happy_asymmetry (m : TraversalMode) : IsHappy .undirected backwardsChain ∧ Reaches backwardsChain m 2 0 ∧ ¬ Reaches backwardsChain m 0 2
 
 end
 end Lax330177.Examples

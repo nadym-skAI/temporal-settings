@@ -1,0 +1,208 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\title{Temporal graphs, from snapshots to optimal paths}
+\author{Michelle Döring \and Hendrik Molter}
+\date{}
+\begin{document}
+\maketitle
+
+\section{One graph, three representations}
+
+% lax begin Lax330177.Representations
+\begin{definition}
+Fix a finite vertex set and a lifetime $T$. A temporal graph is a sequence
+of loopless snapshots indexed by $0,\ldots,T-1$. In the directed setting
+each snapshot records arcs. In the undirected setting the two orientations
+represent the same physical edge. The \emph{footprint} contains the edges
+that appear at least once. Give each such edge the set of times at which it
+appears. Alternatively, list the arc occurrences $(t,u,v)$ in chronological
+order, with ties in any order. All three descriptions retain the vertex set
+and lifetime, including isolated vertices and empty final snapshots.
+\end{definition}
+% lax end
+
+% lax begin Lax330177.SnapshotsLabels
+\begin{lemma}
+Converting snapshots to a labelled footprint and back recovers the original
+temporal graph.
+\end{lemma}
+% lax end
+
+% lax begin Lax330177Proofs.Basic.snapshots_labels
+\begin{proof}
+Fix a time $t$ and vertices $u,v$. Reconstructing the snapshot puts the arc
+$(u,v)$ at $t$ exactly when its label set contains $t$. That is precisely
+the condition for including $t$ when the label set was formed. Thus every
+snapshot is recovered, and the lifetime was copied by both conversions.
+\end{proof}
+% lax end
+
+% lax begin Lax330177.Settings
+\begin{definition}
+A labelling is \emph{simple} if each footprint edge has exactly one time,
+\emph{proper} if arcs $(u,v)$ and $(v,w)$ with $w\ne u$ always have distinct labels,
+and \emph{happy} if both hold. Opposite directed arcs may appear simultaneously. In symmetric snapshots the condition says that each snapshot is a matching.
+\end{definition}
+% lax end
+
+% lax begin Lax330177.Paths
+\begin{definition}
+A temporal walk follows edges at their appearance times. The departure
+times increase strictly in a \emph{strict} walk and weakly in a
+\emph{nonstrict} one. A path is a walk whose vertices are pairwise distinct.
+A vertex reaches another if a path joins them in the chosen mode.
+A path with no edges reaches its own starting vertex.
+\end{definition}
+% lax end
+
+% lax begin Lax330177.ReachabilityGraph
+\begin{definition}
+The \emph{reachability graph} in a chosen mode is the static digraph on the
+same vertices with an arc $u\to v$ exactly when $u\ne v$ and a temporal path
+in that mode joins $u$ to $v$. The zero-edge path gives reflexive reachability,
+but the digraph omits loops.
+\end{definition}
+% lax end
+\newpage
+\section{When do strict and nonstrict paths agree?}
+
+% lax begin Lax330177.ProperPathTimes
+\begin{lemma}
+On a proper temporal graph, every nonstrict path already has strictly
+increasing departure times.
+\end{lemma}
+% lax end
+
+% lax begin Lax330177Proofs.Basic.proper_path_times
+\begin{proof}
+Consecutive edges share their middle vertex. Their outer vertices are distinct because a path never repeats a vertex. Properness therefore
+rules out equal departure times on consecutive edges. Weak increase at
+every step becomes strict increase.
+\end{proof}
+% lax end
+
+% lax begin Lax330177.ProperModes
+\begin{theorem}
+On a proper directed or undirected temporal graph, $u$ reaches $v$ strictly
+if and only if $u$ reaches $v$ nonstrictly.
+\end{theorem}
+% lax end
+
+% lax begin Lax330177Proofs.Basic.proper_modes
+\begin{proof}
+A strict path satisfies the nonstrict rule. In the other direction, the
+preceding lemma shows that the very same nonstrict path, with its original
+departure times, is a strict witness.
+\end{proof}
+% lax end
+
+% lax begin Lax330177.BounceSameTime
+\begin{example}
+The corresponding assertion about every nonstrict \emph{walk} fails even
+for a single undirected edge.
+\end{example}
+% lax end
+
+% lax begin Lax330177Proofs.Basic.bounce_same_time
+\begin{proof}
+Let the edge appear at times 0 and 1. The graph is proper because it has
+only one physical edge. At time 0 a walk can cross that edge and return
+immediately. The two departures have the same time.
+\end{proof}
+% lax end
+
+% lax begin Lax330177.Durations
+\begin{definition}
+Give each edge occurrence a nonnegative integer traversal time. A departure
+at $a$ with traversal time $c$ arrives at $a+c$. A subsequent step may
+depart upon arrival or after waiting. The lifetime bounds departures, and
+the final arrival may follow the last snapshot.
+\end{definition}
+% lax end
+
+% lax begin Lax330177.UniformPaths
+\begin{lemma}
+For fixed vertices and departure times, uniform traversal time zero gives
+exactly the nonstrict paths, and uniform time one gives exactly the strict paths.
+\end{lemma}
+% lax end
+
+% lax begin Lax330177Proofs.Basic.uniform_paths
+\begin{proof}
+Availability and vertex distinctness are the same in both descriptions.
+For departures $a,b$ in traversal order, feasibility means $a+c\le b$.
+For $c=0$ this says $a\le b$. For $c=1$ it says $a<b$, since the times
+are integers.
+\end{proof}
+% lax end
+
+\newpage
+\section{What makes a path optimal?}
+
+% lax begin Lax330177.OptimalPaths
+\begin{definition}
+Fix endpoints, a release time and an arrival deadline. Among feasible paths,
+a \emph{shortest} path minimizes hops, a \emph{fastest} path minimizes
+elapsed time, and a \emph{foremost} path minimizes arrival time.
+A \emph{latest-departure} path maximizes its first departure time.
+A \emph{minimum-waiting} path minimizes the sum of waits between successive
+traversals. Waiting before the first departure contributes nothing.
+\end{definition}
+% lax end
+
+% lax begin Lax330177.ElapsedEq
+\begin{theorem}
+If each traversal takes $c$ units, a path with $k$ hops and total internal
+waiting time $w$ has elapsed time $w+kc$.
+\end{theorem}
+% lax end
+
+% lax begin Lax330177Proofs.UniformCosts.elapsed_eq
+\begin{proof}
+Partition the interval from first departure to final arrival at the
+successive arrivals and departures. The traversal intervals contribute
+$kc$ in total. The remaining gaps are exactly the internal waits, of total
+length $w$. On a zero-hop path departure and arrival coincide and both
+terms vanish.
+\end{proof}
+% lax end
+
+% lax begin Lax330177.ZeroOptima
+\begin{lemma}
+At uniform traversal time zero, a feasible path is fastest exactly when it
+has minimum total waiting time.
+\end{lemma}
+% lax end
+
+% lax begin Lax330177Proofs.UniformCosts.zero_optima
+\begin{proof}
+Set $c=0$ in the preceding identity. Every feasible path then has the same
+value under both objectives, so the two sets of minimizers agree.
+\end{proof}
+% lax end
+
+% lax begin Lax330177.NoWaitDetour
+\begin{example}
+Take a directed triangle with arcs $0\to1$, $1\to2$, $0\to2$, each
+available at times 0 through 3. Let each traversal take $c\in\{0,1\}$
+units, with release time 0 and deadline $3+c$. The two-hop detour
+departing at $0,c$ minimizes waiting, uses more hops than the direct arc,
+and is fastest exactly when $c=0$.
+\end{example}
+% lax end
+
+% lax begin Lax330177Proofs.CostExamples.no_wait_detour
+\begin{proof}
+The second departure coincides with the first arrival, so the detour waits
+zero time. Its two traversals take $2c$ units in total. At $c=0$ this is
+the smallest possible elapsed time. At $c=1$ the direct arc needs only
+one unit and arrives sooner when both paths start at time 0.
+\end{proof}
+% lax end
+\end{document}

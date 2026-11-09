@@ -1,3 +1,4 @@
+import Lax330177.OptimaExist
 import Lax330177.OptimalPaths
 
 namespace Lax330177Proofs.OptimalPaths
@@ -13,7 +14,7 @@ private theorem minimum {α : Type} (h : Nonempty α) (cost : α → ℕ) :
 
 /--
 ---
-conclusion: Lax330177.OptimalPaths.optima_exist
+conclusion: Lax330177.OptimaExist.optima_exist
 ---
 For each of hop count, elapsed time, arrival time and total waiting, collect the values attained by feasible paths. If a feasible path exists, each collection is a nonempty set of natural numbers and has a least member. A path attaining that member is optimal for the chosen criterion. For latest departure, minimize the deadline minus the departure time. Every feasible departure is at or before the deadline, so a path minimizing this difference departs as late as possible.
 -/
